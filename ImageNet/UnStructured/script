@@ -1,0 +1,1 @@
+sbatch -c 48 --gres=gpu:8 -p batch -t 2-0:0:0 --job-name resnet50  resnet_50.sh

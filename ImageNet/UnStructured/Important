@@ -1,0 +1,12 @@
+Always Delete Dump Before Starting New Run
+This one has 
+label smoothing	= 0.1
+LRWarmUp	= 5 Epochs
+WarmUp		= 0 Epoch Note sparsity is NOT increased gradually
+Linear LrScaling= True
+Nestrov Momentum= True
+WD on BN	= False
+First Layer	= Untouched
+Note Layer change
+Note BatchSize change
+Note NumGPU change

@@ -1,0 +1,20 @@
+
+Note TOPK PERIOD MEANING IS DIFFERENT FROM IMAGENET; HERE WE DIRECTLY SPECIFY PERIOD WHEREAS FOR IMAGENET CODE WE SPECIFY HOW MANY TIME WE WANT TO COMPUTE TOPK
+Note conv.py is used for VGG,RESNET and CONV2 is used for DENSENET
+Note initial thesholdfile will depend on the convolution layer
+
+DON'T RESUME
+Always Delete Dump Before Starting New Run
+
+
+Note Layer change
+Note BatchSize change
+Note NumGPU change
+
+This one has 
+label smoothing	= 0.1
+WarmUp		= 5 Epochs
+Linear Scaling	= True
+Nestrov Momentum= True
+WD on BN	= False
+First Layer	= Untouched

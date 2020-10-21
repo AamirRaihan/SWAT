@@ -1,0 +1,2 @@
+#!/bin/sh
+sbatch -c 4 --gres=gpu:1 -p batch -t 2-0:0:0 --job-name densenet densenet.sh

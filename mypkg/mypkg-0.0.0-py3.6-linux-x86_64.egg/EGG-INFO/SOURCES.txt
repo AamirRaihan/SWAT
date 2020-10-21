@@ -1,0 +1,6 @@
+hello-extension.cpp
+setup.py
+mypkg.egg-info/PKG-INFO
+mypkg.egg-info/SOURCES.txt
+mypkg.egg-info/dependency_links.txt
+mypkg.egg-info/top_level.txt
