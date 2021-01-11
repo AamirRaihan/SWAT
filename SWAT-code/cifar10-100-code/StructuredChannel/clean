@@ -1,3 +1,0 @@
-#!/bin/bash
-rm -rf dump/*
-rm -rf temp_data*

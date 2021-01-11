@@ -1,0 +1,20 @@
+lr_schedule:
+  - 0 : 0.1 
+  - 60 : 0.02
+  - 120 : 0.004
+  - 160 : 0.0008
+total_epoch      : 200
+train_batch_size : 128
+test_batch_size  : 100
+weight_decay     : 0.0005
+bn_weight_decay  : False
+momentum         : 0.9
+nesterov         : True  
+sparsity         : 0.80
+topk_period      : 20
+warmup           : -5
+num_conv_layer   : 16 
+pruning_type     : 'unstructured'
+pruning_mode     : 'constant'
+sparsify_first_layer: False 
+sparsify_last_layer: True

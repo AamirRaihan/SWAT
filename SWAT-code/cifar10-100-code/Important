@@ -1,0 +1,4 @@
+Note TopK Period meaning is different from the ImageNet codebase. Here we are directly specifying the period for recomputing the Top-K threshold where as in ImageNet codebase we specify how many times we want to compute the Top-K threshold in an Epoch. 
+Note initial thesholdfile will depend on the convolution layer.
+Don't resume training it is not supported currently. 
+Always delete dump before starting a new run.
