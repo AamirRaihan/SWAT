@@ -203,8 +203,8 @@ def resume(checkpt=None):
     # Load checkpoint.
     global start_epoch
     global best_acc
-    assert os.path.isdir('checkpoint'), 'Error: no checkpoint directory found!'
     if checkpt==None:
+        assert os.path.isdir('checkpoint'), 'Error: no checkpoint directory found!'
         checkpt='./checkpoint/ckpt.t7'
     checkpoint = torch.load(checkpt)
     print("Loading checkpoint: ",checkpt)

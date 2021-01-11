@@ -18,13 +18,13 @@ ttps://camo.githubusercontent.com/b1dff6a6513fce2ebb171af6d4c6e446b6552dadfd6f15
          * [Docker Setup](#docker-setup)
       * [Basic Usage](#basic-usage)
          * [Unstructured SWAT](#unstructured-swat)
-            * [CIFAR10](#cifar10)
-            * [CIFAR100](#cifar100)
-            * [IMAGENET](#imagenet)
+            * [Cifar10](#cifar10)
+            * [Cifar100](#cifar100)
+            * [ImageNet](#imagenet)
          * [Structured SWAT](#structured-swat)
-            * [CIFAR10](#cifar10-1)
-            * [CIFAR100](#cifar100-1)
-            * [IMAGEMENT](#imagement)
+            * [Cifar10](#cifar10-1)
+            * [Cifar100](#cifar100-1)
+            * [ImageNet](#imagement)
       * [Pretrained Model](#pretrained-model)
       * [Training/Inference FLOP count](#traininginference-flop-count)
       * [Citation](#citation)
@@ -82,31 +82,53 @@ More Information on installing docker is present [here]().
 
 #### CIFAR10
 
-|   Network    |  Method  | Weight Sparsity (%) | Activation Sparsity (%) | Top-1 Accuracy (%) | Training FLOP ⬇ % |
-| :----------: | :------: | :-----------------: | :---------------------: | :----------------: | :---------------: |
-|    VGG-16    |  SWAT-U  |        90.0         |          90.0           |     91.95±0.06     |       89.7        |
-|    VGG-16    | SWAT-ERK |        95.0         |          82.0           |     92.50±0.07     |       89.5        |
-|    VGG-16    |  SWAT-M  |        95.0         |          65.0           |     93.41±0.05     |       64.0        |
-|   WRN-16-8   |  SWAT-U  |        90.0         |          90.0           |     95.13±0.11     |       90.0        |
-|   WRN-16-8   | SWAT-ERK |        95.0         |          84.0           |     95.00±0.12     |       91.4        |
-|   WRN-16-8   |  SWAT-M  |        95.0         |          78.0           |     94.97±0.04     |       86.3        |
-| DenseNet-121 |  SWAT-U  |        90.0         |          90.0           |     94.48±0.06     |       89.8        |
-| DenseNet-121 | SWAT-ERK |        90.0         |          88.0           |     94.14±0.11     |       89.7        |
-| DenseNet-121 |  SWAT-M  |        90.0         |          86.0           |     94.29±0.11     |       84.2        |
+*Running Inference:* 
+
+```python main.py -model "ResNet18" -dataset="Cifar10"  --schedule-file $1 --inference 1 --checkpoint $2   ```
+
+Schedule-files are present in run_configurations [directory](https://github.com/AamirRaihan/SWAT/tree/main/SWAT-code/cifar10-100-code/run_configurations).
+
+*Running Training:* 
+
+```./run_script/resnet_cifar10.sh run_configurations/unstructured_constant_resnet18_schedule_90.yaml ```
+
+|   Network    |  Method  | Weight Sparsity (%) | Activation Sparsity (%) | Top-1 Accuracy (%) | Training FLOP ⬇ % | Checkpoint                                                   |
+| :----------: | :------: | :-----------------: | :---------------------: | :----------------: | :---------------: | ------------------------------------------------------------ |
+|    VGG-16    |  SWAT-U  |        90.0         |          90.0           |     91.95±0.06     |       89.7        | [here](https://drive.google.com/drive/u/1/folders/1sW8pMzUQoNY4lnTia2MspAtIoNXZHAqu) |
+|    VGG-16    | SWAT-ERK |        95.0         |          82.0           |     92.50±0.07     |       89.5        | [here](https://drive.google.com/drive/u/1/folders/1GMmOStXCNCeLHr2UMYKOLVGx6kKJ9PLL) |
+|    VGG-16    |  SWAT-M  |        95.0         |          65.0           |     93.41±0.05     |       64.0        | [here](https://drive.google.com/drive/u/1/folders/1-NSGNKXmPCmchMt5sDTMK23hRGm37Je_) |
+|   WRN-16-8   |  SWAT-U  |        90.0         |          90.0           |     95.13±0.11     |       90.0        | [here](https://drive.google.com/drive/u/1/folders/1Rcs5n1NeRiypaL-S3tV0r8bJSapJ-Zh7) |
+|   WRN-16-8   | SWAT-ERK |        95.0         |          84.0           |     95.00±0.12     |       91.4        | [here](https://drive.google.com/drive/u/1/folders/1Bxs-w3UQIDL23sYpfQwkavLkVWTApHI4) |
+|   WRN-16-8   |  SWAT-M  |        95.0         |          78.0           |     94.97±0.04     |       86.3        | [here](https://drive.google.com/drive/u/1/folders/19VHi7WFsaa7DyJZQ2AEKcaeiMeoj-JI-) |
+| DenseNet-121 |  SWAT-U  |        90.0         |          90.0           |     94.48±0.06     |       89.8        | [here](https://drive.google.com/drive/u/1/folders/18wdBoaBtyLRZI75Z2itTMs2eI-JGJCj1) |
+| DenseNet-121 | SWAT-ERK |        90.0         |          88.0           |     94.14±0.11     |       89.7        | [here](https://drive.google.com/drive/u/1/folders/1YrMrxe9CCzJZ3AmXvSdTFa_KWyScE6kB) |
+| DenseNet-121 |  SWAT-M  |        90.0         |          86.0           |     94.29±0.11     |       84.2        | [here](https://drive.google.com/drive/u/1/folders/1NcyvGcnt8XM5LK2sup9TWl8gfRJP3IAG) |
+
+Note more checkpoints are available [here](https://drive.google.com/drive/folders/148nfMxjhn5_vLVBqJe-z2L_vRL7-tohO?usp=sharing). Basically, the checkpoints for different sparsity percentage are present there. Moreover, ResNet-18 data is also present. You can also plot the train/test and loss curve for all the individual training run using the data present in the directory.
 
 #### CIFAR100
 
-|   Network    |  Method  | Weight Sparsity(%) | Activation Sparsity(%) | Top-1 Accuracy(%) | Training FLOP ⬇ % |
-| :----------: | :------: | :----------------: | :--------------------: | :---------------: | :---------------: |
-|    VGG-16    |  SWAT-U  |        90.0        |          90.0          |    91.95±0.08     |                   |
-|    VGG-16    | SWAT-ERK |        90.0        |          69.6          |    92.50±0.11     |                   |
-|    VGG-16    |  SWAT-M  |        90.0        |          59.9          |    93.41±0.23     |                   |
-|   WRN-16-8   |  SWAT-U  |        90.0        |          90.0          |    95.13±0.13     |                   |
-|   WRN-16-8   | SWAT-ERK |        90.0        |          77.6          |    95.00±0.07     |                   |
-|   WRN-16-8   |  SWAT-M  |        90.0        |          73.3          |    94.97±0.11     |                   |
-| DenseNet-121 |  SWAT-U  |        90.0        |          90.0          |    94.48±0.06     |                   |
-| DenseNet-121 | SWAT-ERK |        90.0        |          90.0          |    94.14±0.03     |                   |
-| DenseNet-121 |  SWAT-M  |        90.0        |          84.2          |    94.29±0.13     |                   |
+*Running Inference:* 
+
+```python main.py -model "ResNet18" -dataset="Cifar100"  --schedule-file $1 --inference 1 --checkpoint $2   ```
+
+Schedule-files are present in run_configurations [directory](https://github.com/AamirRaihan/SWAT/tree/main/SWAT-code/cifar10-100-code/run_configurations).
+
+*Running Training:* 
+
+```./run_script/resnet_cifar100.sh run_configurations/unstructured_constant_resnet18_schedule_90.yaml ```
+
+|   Network    |  Method  | Weight Sparsity(%) | Activation Sparsity(%) | Top-1 Accuracy(%) | Training FLOP ⬇ % | Checkpoint                                                   |
+| :----------: | :------: | :----------------: | :--------------------: | :---------------: | :---------------: | ------------------------------------------------------------ |
+|    VGG-16    |  SWAT-U  |        90.0        |          90.0          |    91.95±0.08     |         -         | [here](https://drive.google.com/drive/folders/1vk8dNB2RxQz695buv43Lyh3e1fhS2xFd?usp=sharing) |
+|    VGG-16    | SWAT-ERK |        90.0        |          69.6          |    92.50±0.11     |         -         | [here](https://drive.google.com/drive/folders/1GRc46x7SKPiYDTw9FZqINocOI2mpo2-R?usp=sharing) |
+|    VGG-16    |  SWAT-M  |        90.0        |          59.9          |    93.41±0.23     |         -         | [here](https://drive.google.com/drive/folders/1uOMsPcVWjoz6KvgyMdorKnZfAbXGo_7V?usp=sharing) |
+|   WRN-16-8   |  SWAT-U  |        90.0        |          90.0          |    95.13±0.13     |         -         | [here](https://drive.google.com/drive/folders/1OqnDwn-A7U83pYIHCbOtePW-r-ZW5t9e?usp=sharing) |
+|   WRN-16-8   | SWAT-ERK |        90.0        |          77.6          |    95.00±0.07     |         -         | [here](https://drive.google.com/drive/folders/1xmEXQonCkdHvh6yWo7T7RqnS3_8GqVO4?usp=sharing) |
+|   WRN-16-8   |  SWAT-M  |        90.0        |          73.3          |    94.97±0.11     |         -         | [here](https://drive.google.com/drive/folders/15Mc9zFc6YCJTuFc2ZUsG2Wyo1Ywhs9eJ?usp=sharing) |
+| DenseNet-121 |  SWAT-U  |        90.0        |          90.0          |    94.48±0.06     |         -         | [here](https://drive.google.com/drive/folders/1NiVUpFqKxmX5ff_sv6YTDeEk9zWEAE1F?usp=sharing) |
+| DenseNet-121 | SWAT-ERK |        90.0        |          90.0          |    94.14±0.03     |         -         | [here](https://drive.google.com/drive/folders/1BZkO_zr7y9b5Ofyv5wqfMyJ0CEoyu6yM?usp=sharing) |
+| DenseNet-121 |  SWAT-M  |        90.0        |          84.2          |    94.29±0.13     |         -         | [here](https://drive.google.com/drive/folders/1BZkO_zr7y9b5Ofyv5wqfMyJ0CEoyu6yM?usp=sharing) |
 
 #### IMAGENET
 
@@ -125,25 +147,45 @@ More Information on installing docker is present [here]().
 
 #### CIFAR10
 
-|   Network    | Method | Weight Sparsity (%) | Activation Sparsity (%) | Channel Pruned (%) | Top-1 Accuracy (%) | Training FLOP ⬇ % |
-| :----------: | :----: | :-----------------: | :---------------------: | :----------------: | :----------------: | :---------------: |
-|  ResNet-18   | SWAT-U |        50.0         |          50.0           |        50.0        |     94.73±0.06     |       49.9        |
-|  ResNet-18   | SWAT-U |        60.0         |          60.0           |        60.0        |     94.68±0.03     |       59.8        |
-|  ResNet-18   | SWAT-U |        70.0         |          70.0           |        70.0        |     94.65±0.19     |       69.8        |
-| DenseNet-121 | SWAT-U |        50.0         |          50.0           |        50.0        |     95.04±0.26     |       49.9        |
-| DenseNet-121 | SWAT-U |        60.0         |          60.0           |        60.0        |     94.82±0.11     |       59.9        |
-| DenseNet-121 | SWAT-U |        70.0         |          70.0           |        70.0        |     94.81±0.20     |       69.9        |
+*Running Inference:* 
+
+```python main.py -model "ResNet18" -dataset="Cifar10"  --schedule-file $1 --inference 1 --checkpoint $2   ```
+
+Schedule-files are present in run_configurations [directory](https://github.com/AamirRaihan/SWAT/tree/main/SWAT-code/cifar10-100-code/run_configurations).
+
+*Running Training:* 
+
+```./run_script/resnet_cifar10.sh run_configurations/structured_constant_resnet18_schedule_70.yaml ```
+
+|   Network    | Method | Weight Sparsity (%) | Activation Sparsity (%) | Channel Pruned (%) | Top-1 Accuracy (%) | Training FLOP ⬇ % | Checkpoint                                                   |
+| :----------: | :----: | :-----------------: | :---------------------: | :----------------: | :----------------: | :---------------: | ------------------------------------------------------------ |
+|  ResNet-18   | SWAT-U |        50.0         |          50.0           |        50.0        |     94.73±0.06     |       49.9        | [here](https://drive.google.com/drive/folders/1qexXzrHQiCFo4UCpMJHmy1pZmcDfO_Rt?usp=sharing) |
+|  ResNet-18   | SWAT-U |        60.0         |          60.0           |        60.0        |     94.68±0.03     |       59.8        | [here](https://drive.google.com/drive/folders/16W4oMfEuIOdAx67jX26zF98gnWJtessy?usp=sharing) |
+|  ResNet-18   | SWAT-U |        70.0         |          70.0           |        70.0        |     94.65±0.19     |       69.8        | [here](https://drive.google.com/drive/folders/1OhV9aDiZSs32HO0S1bJtvgPOwTNdSWtW?usp=sharing) |
+| DenseNet-121 | SWAT-U |        50.0         |          50.0           |        50.0        |     95.04±0.26     |       49.9        | [here](https://drive.google.com/drive/folders/1BTB6rM64Yvv2bjy0RymerWQ4MZL-wT5m?usp=sharing) |
+| DenseNet-121 | SWAT-U |        60.0         |          60.0           |        60.0        |     94.82±0.11     |       59.9        | [here](https://drive.google.com/drive/folders/1R7knbrCrmmA3DbNzndOKiMAer9q4uiIc?usp=sharing) |
+| DenseNet-121 | SWAT-U |        70.0         |          70.0           |        70.0        |     94.81±0.20     |       69.9        | [here](https://drive.google.com/drive/folders/1afGv4Fo1lkz4w-ohUxQv2HcS-tXYflMi?usp=sharing) |
 
 #### CIFAR100
 
-|   Network    | Method | Weight Sparsity (%) | Activation Sparsity (%) | Channel Pruned (%) | Top-1 Accuracy (%) |
-| :----------: | :----: | :-----------------: | :---------------------: | :----------------: | :----------------: |
-|  ResNet-18   | SWAT-U |        50.0         |          50.0           |        50.0        |     76.4±0.05      |
-|  ResNet-18   | SWAT-U |        60.0         |          60.0           |        60.0        |     76.2±0.11      |
-|  ResNet-18   | SWAT-U |        70.0         |          70.0           |        70.0        |     75.6±0.09      |
-| DenseNet-121 | SWAT-U |        50.0         |          50.0           |        50.0        |     78.7±0.03      |
-| DenseNet-121 | SWAT-U |        60.0         |          60.0           |        60.0        |     78.5±0.08      |
-| DenseNet-121 | SWAT-U |        70.0         |          70.0           |        70.0        |     78.1±0.12      |
+*Running Inference:* 
+
+```python main.py -model "ResNet18" -dataset="Cifar100"  --schedule-file $1 --inference 1 --checkpoint $2   ```
+
+Schedule-files are present in run_configurations [directory](https://github.com/AamirRaihan/SWAT/tree/main/SWAT-code/cifar10-100-code/run_configurations).
+
+*Running Training:* 
+
+```./run_script/resnet_cifar100.sh run_configurations/structured_constant_resnet18_schedule_70.yaml ```
+
+|   Network    | Method | Weight Sparsity (%) | Activation Sparsity (%) | Channel Pruned (%) | Top-1 Accuracy (%) | Checkpoint                                                   |
+| :----------: | :----: | :-----------------: | :---------------------: | :----------------: | :----------------: | ------------------------------------------------------------ |
+|  ResNet-18   | SWAT-U |        50.0         |          50.0           |        50.0        |     76.4±0.05      | [here](https://drive.google.com/drive/folders/1RowHtd3C4MY7MupoaYpOcM_MlzBO2DS9?usp=sharing) |
+|  ResNet-18   | SWAT-U |        60.0         |          60.0           |        60.0        |     76.2±0.11      | [here](https://drive.google.com/drive/folders/1PlGtItABO7NzhtTK-HabnD1YrKt2Gv0U?usp=sharing) |
+|  ResNet-18   | SWAT-U |        70.0         |          70.0           |        70.0        |     75.6±0.09      | [here](https://drive.google.com/drive/folders/1vM97Dsn4C5ZYi1BuVjJMRCHgko6sn7pR?usp=sharing) |
+| DenseNet-121 | SWAT-U |        50.0         |          50.0           |        50.0        |     78.7±0.03      | [here](https://drive.google.com/drive/folders/1vM97Dsn4C5ZYi1BuVjJMRCHgko6sn7pR?usp=sharing) |
+| DenseNet-121 | SWAT-U |        60.0         |          60.0           |        60.0        |     78.5±0.08      | [here](https://drive.google.com/drive/folders/1XGPM2l320WGkSRC55a8OxZoZpSWhmizG?usp=sharing) |
+| DenseNet-121 | SWAT-U |        70.0         |          70.0           |        70.0        |     78.1±0.12      | [here](https://drive.google.com/drive/folders/1Fl9mWRUQo2ygCEQ5Xh1IK7qmfunimlN1?usp=sharing) |
 
 #### IMAGEMENT
 
@@ -158,7 +200,10 @@ More Information on installing docker is present [here]().
 
 ## Pretrained Model
 
-
+1. **Unstructured-SWAT on CIFAR-10 Dataset :** [here](https://drive.google.com/drive/folders/1ej5Sg4KVb-5y7b7D_d7HH7gp1rHyzKGp?usp=sharing)
+2. **Unstructured-SWAT on CIFAR-100 Dataset :** [here](https://drive.google.com/drive/folders/1sScgmq8LlFaM7Ylo9IJi2PSlifVlZpVj?usp=sharing)
+3. **Structured-SWAT on CIFAR-10 Dataset :** [here](https://drive.google.com/drive/folders/1pGYuwH24yfxWoKbf7KVX5iBq_Z2nGg3V?usp=sharing)
+4. **Structured-SWAT on CIFAR-100 Dataset :** [here](https://drive.google.com/drive/folders/1xjjZ-tV9t4FvUnV694rptTFUCTrffAfZ?usp=sharing)
 
 ## Training/Inference FLOP count
 
