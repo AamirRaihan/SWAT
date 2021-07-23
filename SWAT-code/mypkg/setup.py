@@ -2,12 +2,15 @@ from setuptools import setup
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension
 
 setup(
-    name='mypkg',
+    name="mypkg",
     ext_modules=[
-        CUDAExtension('mypkg', [
-            'hello-extension.cpp',
-        ])
+        CUDAExtension(
+            name="mypkg",
+            sources=[
+                "hello-extension.cpp",
+            ],
+            libraries=["cudnn"],
+        )
     ],
-    cmdclass={
-        'build_ext': BuildExtension
-    })
+    cmdclass={"build_ext": BuildExtension},
+)

@@ -18,132 +18,88 @@ import torch.backends.cudnn as cudnn
 
 
 class customconv2d(Function):
-    def __init__(self, stride, padding, dilation, groups, name):
-        super(customconv2d, self).__init__()
-        self.stride = stride
-        self.padding = padding
-        self.dilation = dilation
-        self.groups = groups
-        self.name = name
-
-    def load_configuration(self):
-        self.gpuid = torch.cuda.current_device()
-        configuration_data = torch.load("./configuration_data_" + str(self.gpuid))
-        self.epoch = int(configuration_data["epoch"])
-        self.batch_idx = int(configuration_data["batch_idx"])
-        self.layer = int(configuration_data["layer"])
-        self.istrain = int(configuration_data["type"])
-        self.period = int(configuration_data["period"])
-        self.sparsity = configuration_data["sparsity"]
-        self.act_sparsity = configuration_data["global_sparsity"]
-        self.warmup = int(configuration_data["warmup"])
-        self.pruning_type = configuration_data["pruning_type"]
-
-    def release_memory(self):
-        del self.gpuid
-        del self.epoch
-        del self.batch_idx
-        del self.layer
-        del self.istrain
-        del self.period
-        del self.sparsity
-        del self.act_sparsity
-        del self.warmup
-        del self.pruning_type
-        torch.cuda.empty_cache()
-
-    def print_configuration(self):
-        if self.gpuid == 0:
-            print("----------------------")
-            print("Gpu:", self.gpuid, end="\n")
-            print("Epoch:", self.epoch, end="\n")
-            print("BatchIdx:", self.batch_idx, end="\n")
-            print("Layer:", self.layer, end="\n")
-            print("WarmUp:", self.warmup)
-            print("TopK-Period:", self.period, end="\n")
-            print("Sparsity:", self.sparsity[self.layer], end="\n")
-
-    def load_threshold(self):
-        self.threshold = torch.load(
-            "./dump/threshold_" + str(self.layer) + "_" + str(self.gpuid)
-        )
-        self.wt_threshold = self.threshold[0]
-        self.in_threshold = self.threshold[1]
-
-    def sparsify_weight(self, weight):
-        sparsity = self.sparsity[self.layer][1]
+    @staticmethod
+    def sparsify_weight(
+        weight, sparsity, pruning_type, epoch, warm_up, batch_id, period, wt_threshold
+    ):
+        # sparsity = self.sparsity[self.layer][1]
         select_percentage = 1 - sparsity
 
-        if self.pruning_type == "unstructured":
-            if self.epoch >= self.warmup:
-                if self.batch_idx % self.period == 0:
-                    weight, self.wt_threshold = topk.drop_nhwc_send_th(
+        if pruning_type == "unstructured":
+            if epoch >= warmup:
+                if batch_idx % period == 0:
+                    weight, wt_threshold = topk.drop_nhwc_send_th(
                         weight, select_percentage
                     )
                 else:
-                    weight = topk.drop_threshold(weight, self.wt_threshold)
+                    weight = topk.drop_threshold(weight, wt_threshold)
             else:
                 weight = topk.drop_nhwc(weight, select_percentage)
         else:
-            if self.pruning_type == "structured_channel":
+            if pruning_type == "structured_channel":
                 weight = topk.drop_structured(weight, select_percentage)
-            elif self.pruning_type == "structured_filter":
+            elif pruning_type == "structured_filter":
                 weight = topk.drop_structured_filter(weight, select_percentage)
             else:
                 assert (0, "Illegal Pruning Type")
         return weight
 
-    def sparsify_activation(self, input):
-        sparsity = self.sparsity[self.layer][1]
+    def sparsify_activation(
+        input, sparsity, epoch, warm_up, batch_id, period, in_threshold
+    ):
+        # sparsity = self.sparsity[self.layer][1]
         select_percentage = 1 - sparsity
-        if self.epoch >= self.warmup:
-            if self.batch_idx % self.period == 0:
-                input, self.in_threshold = topk.drop_nhwc_send_th(
-                    input, select_percentage
-                )
+        if epoch >= warmup:
+            if batch_idx % period == 0:
+                input, in_threshold = topk.drop_nhwc_send_th(input, select_percentage)
             else:
-                input = topk.drop_threshold(input, self.in_threshold)
+                input = topk.drop_threshold(input, in_threshold)
         else:
             input = topk.drop_nhwc(input, select_percentage)
 
         return input
 
-    def update_threshold(self):
-        if self.batch_idx % self.period == 0:
-            threshold = torch.tensor([self.wt_threshold, self.in_threshold])
-            torch.save(
-                threshold, "./dump/threshold_" + str(self.layer) + "_" + str(self.gpuid)
-            )
-
-    def update_configuration(self):
-        next_layer_configuration_data = {
-            "global_sparsity": self.act_sparsity,
-            "epoch": self.epoch,
-            "batch_idx": self.batch_idx,
-            "layer": self.layer + 1,
-            "type": self.istrain,
-            "period": self.period,
-            "sparsity": self.sparsity,
-            "warmup": self.warmup,
-            "pruning_type": self.pruning_type,
-        }
-        torch.save(
-            next_layer_configuration_data, "./configuration_data_" + str(self.gpuid)
-        )
-        
     @staticmethod
-    def forward(ctx, input, weight, bias=None):
-        ctx.load_configuration()
-        ctx.load_threshold()
-        weight = ctx.sparsify_weight(weight)
-        output = F.conv2d(
-            input, weight, bias, ctx.stride, ctx.padding, ctx.dilation, ctx.groups
+    def forward(
+        ctx,
+        input,
+        weight,
+        stride,
+        padding,
+        dilation,
+        groups,
+        sparsity,
+        pruning_type,
+        epoch,
+        warm_up,
+        batch_id,
+        period,
+        wt_threshold,
+        in_threshold,
+        bias=None,
+    ):
+        # First Apply Convolution with just sparse weights
+        weight = sparsify_weight(
+            weight,
+            sparsity,
+            pruning_type,
+            epoch,
+            warm_up,
+            batch_id,
+            period,
+            wt_threshold,
         )
-        input = ctx.sparsify_activation(input)
-        ctx.update_threshold()
-        ctx.update_configuration()
+        output = F.conv2d(input, weight, bias, stride, padding, dilation, groups)
+        # After convolution, sparsity
+        input = sparsify_activation(
+            input, sparsity, epoch, warm_up, batch_id, period, in_threshold
+        )
+
+        self.update_threshold()
+        self.update_configuration()
+
         ctx.save_for_backward(input, weight, bias)
-        ctx.release_memory()
+        # ctx.release_memory()
         return output
 
     @staticmethod
@@ -246,6 +202,81 @@ class myConvNd(nn.Module):
             s += ", bias=False"
         return s.format(**self.__dict__)
 
+    def __init__(self, stride, padding, dilation, groups, name):
+        super(customconv2d, self).__init__()
+        self.stride = stride
+        self.padding = padding
+        self.dilation = dilation
+        self.groups = groups
+        self.name = name
+
+    def load_configuration(self):
+        self.gpuid = torch.cuda.current_device()
+        configuration_data = torch.load("./configuration_data_" + str(self.gpuid))
+        self.epoch = int(configuration_data["epoch"])
+        self.batch_idx = int(configuration_data["batch_idx"])
+        self.layer = int(configuration_data["layer"])
+        self.istrain = int(configuration_data["type"])
+        self.period = int(configuration_data["period"])
+        self.sparsity = configuration_data["sparsity"]
+        self.act_sparsity = configuration_data["global_sparsity"]
+        self.warmup = int(configuration_data["warmup"])
+        self.pruning_type = configuration_data["pruning_type"]
+
+    def release_memory(self):
+        del self.gpuid
+        del self.epoch
+        del self.batch_idx
+        del self.layer
+        del self.istrain
+        del self.period
+        del self.sparsity
+        del self.act_sparsity
+        del self.warmup
+        del self.pruning_type
+        torch.cuda.empty_cache()
+
+    def print_configuration(self):
+        if self.gpuid == 0:
+            print("----------------------")
+            print("Gpu:", self.gpuid, end="\n")
+            print("Epoch:", self.epoch, end="\n")
+            print("BatchIdx:", self.batch_idx, end="\n")
+            print("Layer:", self.layer, end="\n")
+            print("WarmUp:", self.warmup)
+            print("TopK-Period:", self.period, end="\n")
+            print("Sparsity:", self.sparsity[self.layer], end="\n")
+
+    def load_threshold(self):
+        self.threshold = torch.load(
+            "./dump/threshold_" + str(self.layer) + "_" + str(self.gpuid)
+        )
+        self.wt_threshold = self.threshold[0]
+        self.in_threshold = self.threshold[1]
+
+    def update_threshold(self):
+        if self.batch_idx % self.period == 0:
+            threshold = torch.tensor([self.wt_threshold, self.in_threshold])
+            torch.save(
+                threshold, "./dump/threshold_" + str(self.layer) + "_" + str(self.gpuid)
+            )
+
+    def update_configuration(self):
+        next_layer_configuration_data = {
+            "global_sparsity": self.act_sparsity,
+            "epoch": self.epoch,
+            "batch_idx": self.batch_idx,
+            "layer": self.layer + 1,
+            "type": self.istrain,
+            "period": self.period,
+            "sparsity": self.sparsity,
+            "warmup": self.warmup,
+            "pruning_type": self.pruning_type,
+        }
+        torch.save(
+            next_layer_configuration_data, "./configuration_data_" + str(self.gpuid)
+        )
+
 
 class CustomConv2d(myConvNd):
     def __init__(
@@ -279,14 +310,49 @@ class CustomConv2d(myConvNd):
         )
 
     def forward(self, input):
+        self.load_configuration()
+        self.load_threshold()
+
         if self.bias is None:
-            return customconv2d(
-                self.stride, self.padding, self.dilation, self.groups, self.name
-            )(input, self.weight)
+            output = customconv2d.appy(
+                input,
+                self.weight,
+                self.stride,
+                self.padding,
+                self.dilation,
+                self.groups,
+                self.sparsity,
+                self.pruning_type,
+                self.epoch,
+                self.warm_up,
+                self.batch_id,
+                self.period,
+                self.wt_threshold,
+                self.in_threshold,
+                self.bias,
+            )
         else:
-            return customconv2d(
-                self.stride, self.padding, self.dilation, self.groups, self.name
-            )(input, self.weight, self.bias)
+            output = customconv2d.appy(
+                input,
+                self.weight,
+                self.stride,
+                self.padding,
+                self.dilation,
+                self.groups,
+                self.bias,
+                self.sparsity,
+                self.pruning_type,
+                self.epoch,
+                self.warm_up,
+                self.batch_id,
+                self.period,
+                self.wt_threshold,
+                self.in_threshold,
+            )
+
+        self.update_threshold()
+        self.update_configuration()
+        return output
 
 
 class testModel(nn.Module):
